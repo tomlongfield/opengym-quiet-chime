@@ -14,16 +14,17 @@ const RELEASES_URL = `https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/re
  * Compares two semver strings (e.g. "1.2.11" vs "1.3.0").
  * Returns  1 if a > b, -1 if a < b, 0 if equal.
  *
- * Build metadata is dropped first. A version that says which build it came from carries it as
- * semver build metadata ("1.3.8+2026-09-18.2"), and splitting that on "." makes the patch NaN —
- * which read as 0, so a release tagged that way compared as 1.3.0 and a real update went
- * unnoticed. Semver says the metadata plays no part in precedence, so "1.3.7+anything" and
- * "1.3.7" are the same version here. Dropped on both operands, so it holds whichever side
- * carries it.
+ * Build metadata and any "-suffix" are dropped first. A version that says which build it came
+ * from carries it as semver build metadata ("1.3.8+2026-09-18.2"), and a locally relabeled
+ * version carries one as a "-suffix" (e.g. "1.3.9-quiet-chime") — either way, splitting that on
+ * "." makes the patch NaN, which read as 0, so a release tagged like that compared as 1.3.0 and
+ * a real update went unnoticed. Precedence is decided on the three numeric parts alone, so
+ * "1.3.7+anything" and "1.3.7-anything" are both the same version as "1.3.7" here. Dropped on
+ * both operands, so it holds whichever side carries it.
  */
 function compareSemver(a, b) {
-  const pa = a.replace(/^v/, '').split('+')[0].split('.').map(Number)
-  const pb = b.replace(/^v/, '').split('+')[0].split('.').map(Number)
+  const pa = a.replace(/^v/, '').split(/[-+]/)[0].split('.').map(Number)
+  const pb = b.replace(/^v/, '').split(/[-+]/)[0].split('.').map(Number)
   for (let i = 0; i < 3; i++) {
     const diff = (pa[i] || 0) - (pb[i] || 0)
     if (diff > 0) return 1
