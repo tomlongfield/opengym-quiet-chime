@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { uid } from '../lib/format.js'
-import { beep, chime, vibrate } from '../lib/sound.js'
+import { beep, vibrate } from '../lib/sound.js'
 import { api } from '../lib/api.js'
 import { t } from '../lib/i18n.js'
 import { deviceId } from '../lib/push.js'
@@ -96,9 +96,9 @@ const runRest = (set, get) => {
     const snd = useStore.getState().S.sound
     if (left <= 0) {
       if (seenLive) {
-        // The Android alarm for this end stays quiet while the app is on screen, so this chime is
+        // The Android alarm for this end stays quiet while the app is on screen, so this beep is
         // the only one. Locked, this branch never runs and the alarm's tone does.
-        chime(snd)
+        beep(snd, 880, 0.15); beep(snd, 880, 0.15, 0.25); beep(snd, 1320, 0.4, 0.5)
         vibrate([200, 100, 200]); get().flashTimer()
       }
       // The toast stays even when the rest ran out while the app was hidden: a guest, or anyone
@@ -279,7 +279,7 @@ export const useUI = create((set, get) => ({
       const snd = useStore.getState().S.sound
       if (left <= 0) {
         if (seenLive && !wk.alerted) {
-          chime(snd)
+          beep(snd, 880, 0.15); beep(snd, 880, 0.15, 0.25); beep(snd, 1320, 0.4, 0.5)
           vibrate([200, 100, 200]); get().flashTimer()
         }
         if (wk.overtime && left > -MAX_WORK_OVERTIME_SEC) { set({ work: { ...wk, left, alerted: true } }); return }
